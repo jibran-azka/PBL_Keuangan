@@ -7,9 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tagihan extends Model
 {
+    // app/Models/Tagihan.php
+
     protected $fillable = [
-        'user_id', 'account_id', 'nama', 'nominal', 'tanggal_jatuh_tempo', 'status',
+        'user_id',
+        'account_id',
+        'nama',
+        'no_tujuan', // <== HARUS ADA INI
+        'nominal',
+        'tanggal_transfer',
+        'metode',
+        'tujuan',
+        'status',
     ];
+
 
     public function account()
     {

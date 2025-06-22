@@ -1,5 +1,3 @@
-{{-- Ini di views\dashboard.blade.php --}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -35,32 +33,36 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Tanggal</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Jenis</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Deskripsi</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Jumlah</th>
+                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Tanggal</th>
+                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Jenis</th>
+                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Deskripsi</th>
+                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Jumlah</th>
+                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($riwayat as $trx)
                         <tr>
-                            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                {{ $trx->created_at->format('d M Y') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold
-                                {{ $trx->jenis === 'pemasukan' ? 'text-green-600' : 'text-red-600' }}">
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $trx->created_at->format('d M Y') }}</td>
+                            <td class="px-6 py-4 text-sm font-semibold {{ $trx->jenis === 'pemasukan' ? 'text-green-600' : 'text-red-600' }}">
                                 {{ ucfirst($trx->jenis) }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
-                                {{ $trx->keterangan ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                Rp {{ number_format($trx->jumlah) }}
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ $trx->keterangan ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm font-medium">Rp {{ number_format($trx->jumlah) }}</td>
+                            <td class="px-6 py-4 text-sm space-x-2">
+                                <a href="{{ route('transaksi.edit', $trx->id) }}" class="text-blue-600 hover:underline">Edit</a>
+                                <form action="{{ route('transaksi.destroy', $trx->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" onclick="return confirm('Yakin ingin menghapus transaksi ini?')" class="text-red-600 hover:underline">
+                                        Hapus
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">Tidak ada transaksi.</td>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada transaksi.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -71,24 +73,23 @@
 @endsection
 
 @push('scripts')
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx = document.getElementById('grafikKeuangan').getContext('2d');
     const chart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: {!! json_encode($bulan) !!}, // contoh: ['Jan', 'Feb', 'Mar']
+            labels: {!! json_encode($bulan) !!},
             datasets: [
                 {
                     label: 'Pemasukan',
                     backgroundColor: '#22c55e',
-                    data: {!! json_encode($dataPemasukan) !!}, // array angka
+                    data: {!! json_encode($dataPemasukan) !!},
                 },
                 {
                     label: 'Pengeluaran',
                     backgroundColor: '#ef4444',
-                    data: {!! json_encode($dataPengeluaran) !!}, // array angka
+                    data: {!! json_encode($dataPengeluaran) !!},
                 }
             ]
         },

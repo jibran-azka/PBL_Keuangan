@@ -25,8 +25,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/midtrans/callback', [TopUpController::class, 'midtransCallback']);
 
 
+        
+    Route::get('/tagihan', [TagihanController::class, 'index'])->name('tagihan.index');
+    // Langkah 1 - Pilih metode
+    Route::get('/tagihan/metode', [TagihanController::class, 'create'])->name('tagihan.metode');
 
-    Route::resource('/tagihan', TagihanController::class)->names('tagihan');
+    // Langkah 2 - Pilih tujuan bank / e-wallet
+    Route::get('/tagihan/tujuan', [TagihanController::class, 'tujuan'])->name('tagihan.tujuan');
+
+    // Langkah 3 - Form pengisian tagihan
+    Route::get('/tagihan/form', [TagihanController::class, 'formTagihan'])->name('tagihan.form');
+
+    Route::post('/tagihan/simpan', [TagihanController::class, 'simpan'])->name('tagihan.store');
+    Route::get('/proses-tagihan-harian', [TagihanController::class, 'prosesTagihanHarian']);
+
+
+
 
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.pdf');

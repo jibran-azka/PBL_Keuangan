@@ -5,7 +5,7 @@
     <h1 class="text-xl font-bold mb-4">Daftar Tagihan</h1>
 
     <div class="mb-4 text-right">
-        <a href="{{ route('tagihan.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <a href="{{ route('tagihan.metode') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             + Tambah Tagihan
         </a>
     </div>
@@ -26,8 +26,16 @@
                     <td class="border px-4 py-2">{{ $tagihan->nama }}</td>
                     <td class="border px-4 py-2">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
                     <td class="border px-4 py-2">{{ $tagihan->account->nama_akun }}</td>
-                    <td class="border px-4 py-2">{{ \Carbon\Carbon::parse($tagihan->tanggal_jatuh_tempo)->format('d M Y') }}</td>
-                    <td class="border px-4 py-2">{{ ucfirst($tagihan->status) }}</td>
+                    <td class="border px-4 py-2">{{ \Carbon\Carbon::parse($tagihan->tanggal_transfer)->format('d M Y') }}</td>
+                    <td class="border px-4 py-2">
+                        {{ ucfirst($tagihan->status) }}
+                        @if($tagihan->status == 'menunggu bayar' && $tagihan->xendit_invoice_url)
+                            <br>
+                            <a href="{{ $tagihan->xendit_invoice_url }}" class="`text-blue-600 underline text-sm" target="_blank">
+                                Bayar Sekarang
+                            </a>
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>

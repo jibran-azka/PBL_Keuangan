@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\Transaction;
 
 class AccountController extends Controller
 {
@@ -12,18 +13,31 @@ class AccountController extends Controller
 
     public function index()
     {
-        $accounts = Account::where('user_id', auth()->id())
-            ->with('topUps')
-            ->get()
-            ->map(function ($account) {
-                $account->saldo = $account->topUps
-                    ->where('status', 'success')
-                    ->sum('amount');
-                return $account;
-            });
+        $accounts = Account::where('user_id', auth()->id())->get();
+
+        foreach ($accounts as $account) {
+            if ($account->saldo > $account->last_known_saldo) {
+                $selisih = $account->saldo - $account->last_known_saldo;
+
+                // Catat pemasukan otomatis
+                Transaction::create([
+                    'user_id'     => $account->user_id,
+                    'account_id'  => $account->id,
+                    'jenis'       => 'pemasukan',
+                    'jumlah'      => $selisih,
+                    'keterangan'  => 'Top Up',
+                    'tanggal'     => now(),
+                ]);
+
+                // Update saldo terakhir yang diketahui
+                $account->last_known_saldo = $account->saldo;
+                $account->save();
+            }
+        }
 
         return view('account.index', compact('accounts'));
     }
+
 
 
     public function create()

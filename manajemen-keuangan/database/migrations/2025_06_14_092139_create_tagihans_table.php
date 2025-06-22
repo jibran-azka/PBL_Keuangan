@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('tagihans', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // <-- WAJIB
-            $table->unsignedBigInteger('account_id'); // relasi ke akun
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('account_id');
             $table->string('nama');
+            $table->string('no_tujuan'); // baru
             $table->decimal('nominal', 15, 2);
-            $table->date('tanggal_jatuh_tempo');
-            $table->enum('status', ['aktif', 'sudah dipotong'])->default('aktif');
+            $table->date('tanggal_transfer'); // ganti dari tanggal_jatuh_tempo
+            $table->string('metode'); // baru
+            $table->string('tujuan'); // baru
+            $table->enum('status', ['terjadwal', 'menunggu bayar', 'sudah dipotong', 'gagal - saldo tidak cukup'])->default('terjadwal');
             $table->timestamps();
 
-            // foreign key
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
         });
