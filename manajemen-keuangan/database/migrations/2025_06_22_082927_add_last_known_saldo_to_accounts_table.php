@@ -16,14 +16,13 @@ return new class extends Migration
         });
     }
 
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
         Schema::table('accounts', function (Blueprint $table) {
-            //
+            $table->dropColumn('last_known_saldo');
         });
     }
 };

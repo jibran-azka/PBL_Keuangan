@@ -3,12 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tagihan;
-use App\Models\Account;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Xendit\Xendit;
-
-
 
 class TagihanController extends Controller
 {
@@ -20,87 +16,55 @@ class TagihanController extends Controller
 
     public function create()
     {
-        return view('tagihan.metode');
+        return view('tagihan.create'); // Tidak perlu kirim akun lagi
     }
-
-    public function formTagihan(Request $request)
+    public function destroy($id)
     {
-        $metode = $request->query('metode');
-        $tujuan = $request->query('tujuan');
-        $accounts = Account::where('user_id', auth()->id())->get();
+        $tagihan = Tagihan::findOrFail($id);
+        $tagihan->delete();
 
-        return view('tagihan.form', compact('metode', 'tujuan', 'accounts'));
+        return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dihapus.');
     }
 
-    public function simpan(Request $request)
+
+    public function store(Request $request)
     {
         $request->validate([
-            'nama_tagihan' => 'required|string',
-            'no_tujuan' => 'required',
+            'nama' => 'required|string',
             'nominal' => 'required|numeric|min:1000',
-            'akun_id' => 'required|exists:accounts,id',
-            'tanggal_transfer' => 'required|date',
-            'metode' => 'required',
-            'tujuan' => 'required',
+            'tanggal_jatuh_tempo' => 'required|date|after_or_equal:today',
         ]);
-
-        
-        $akun = Account::find($request->akun_id);
-
-        if ($akun->saldo < $request->nominal) {
-            return back()->with('error', 'Saldo tidak mencukupi.');
-        }
 
         Tagihan::create([
             'user_id' => auth()->id(),
-            'nama' => $request->nama_tagihan,
-            'no_tujuan' => $request->no_tujuan,
+            'nama' => $request->nama,
             'nominal' => $request->nominal,
-            'account_id' => $akun->id,
-            'tanggal_transfer' => $request->tanggal_transfer,
-            'metode' => $request->metode, // ✅ tambahkan ini
-            'tujuan' => $request->tujuan,
-            'status' => 'terjadwal',
+            'account_id' => null, // karena di form gak dipilih
+            'tanggal_transfer' => $request->tanggal_jatuh_tempo,
+            'status' => 'belum dibayar',
+            'metode' => null,
+            'tujuan' => null,
+            'no_tujuan' => null,
+            'sudah_dikirim' => false,
         ]);
-        
-        return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil dijadwalkan.');
+
+        return redirect()->route('tagihan.index')->with('success', 'Pengingat tagihan berhasil dibuat.');
     }
 
-    public function prosesTagihanHarian()
+    public function cekTagihanHariIni()
     {
-        Xendit::setApiKey(config('xendit.secret_key'));
+        $hariIni = Carbon::today();
 
-        $tagihans = Tagihan::whereDate('tanggal_transfer', Carbon::today())
-            ->where('status', 'terjadwal')
+        $tagihans = Tagihan::whereDate('tanggal_transfer', $hariIni)
+            ->where('status', 'belum dibayar')
+            ->where('sudah_dikirim', false)
             ->get();
 
         foreach ($tagihans as $tagihan) {
-            $akun = $tagihan->akun;
+            \Log::info("Reminder: Tagihan '{$tagihan->nama}' jatuh tempo hari ini. Nominal: Rp{$tagihan->nominal}");
 
-            if ($akun->saldo >= $tagihan->nominal) {
-                $akun->saldo -= $tagihan->nominal;
-                $akun->save();
-
-                // Buat invoice Xendit
-                $invoice = \Xendit\Invoice::create([
-                    'external_id' => 'TAGIHAN-' . $tagihan->id . '-' . time(),
-                    'payer_email' => $tagihan->user->email,
-                    'description' => $tagihan->nama,
-                    'amount' => $tagihan->nominal,
-                    'success_redirect_url' => route('tagihan.index'),
-                    'failure_redirect_url' => route('tagihan.index'),
-                    'payment_methods' => $tagihan->metode == 'bank' 
-                        ? ['BCA', 'BNI', 'BRI']
-                        : ['DANA', 'OVO', 'LINKAJA']
-                ]);
-
-                $tagihan->status = 'menunggu bayar';
-                $tagihan->xendit_invoice_url = $invoice['invoice_url'];
-                $tagihan->save();
-            } else {
-                $tagihan->status = 'gagal - saldo tidak cukup';
-                $tagihan->save();
-            }
+            $tagihan->sudah_dikirim = true;
+            $tagihan->save();
         }
     }
 }

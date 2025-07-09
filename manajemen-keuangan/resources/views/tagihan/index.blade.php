@@ -1,48 +1,56 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-5xl mx-auto p-4">
-    <h1 class="text-xl font-bold mb-4">Daftar Tagihan</h1>
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Daftar Tagihan</h2>
 
-    <div class="mb-4 text-right">
-        <a href="{{ route('tagihan.metode') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            + Tambah Tagihan
+    <div class="mb-4">
+        <a href="{{ route('tagihan.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Tambah Tagihan
         </a>
     </div>
 
-    <table class="w-full border border-gray-300 text-center">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border px-4 py-2">Nama Tagihan</th>
-                <th class="border px-4 py-2">Nominal</th>
-                <th class="border px-4 py-2">Akun</th>
-                <th class="border px-4 py-2">Jatuh Tempo</th>
-                <th class="border px-4 py-2">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($tagihans as $tagihan)
-                <tr class="border-t">
-                    <td class="border px-4 py-2">{{ $tagihan->nama }}</td>
-                    <td class="border px-4 py-2">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
-                    <td class="border px-4 py-2">{{ $tagihan->account->nama_akun }}</td>
-                    <td class="border px-4 py-2">{{ \Carbon\Carbon::parse($tagihan->tanggal_transfer)->format('d M Y') }}</td>
-                    <td class="border px-4 py-2">
-                        {{ ucfirst($tagihan->status) }}
-                        @if($tagihan->status == 'menunggu bayar' && $tagihan->xendit_invoice_url)
-                            <br>
-                            <a href="{{ $tagihan->xendit_invoice_url }}" class="`text-blue-600 underline text-sm" target="_blank">
-                                Bayar Sekarang
-                            </a>
+    <div class="overflow-x-auto bg-white shadow-md rounded-xl">
+        <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-800">
+            <thead class="bg-gray-100 text-gray-600">
+                <tr>
+                    <th class="px-6 py-3 text-left">Nama Tagihan</th>
+                    <th class="px-6 py-3 text-left">Nominal</th>
+                    <th class="px-6 py-3 text-left">Tanggal Transfer</th>
+                    <th class="px-6 py-3 text-left">Status Reminder</th>
+                    <th class="px-6 py-3 text-left">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @forelse ($tagihans as $tagihan)
+                <tr>
+                    <td class="px-6 py-4">{{ $tagihan->nama }}</td>
+                    <td class="px-6 py-4">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
+                    <td class="px-6 py-4">{{ $tagihan->tanggal_transfer->format('d M Y') }}</td>
+                    <td class="px-6 py-4">
+                        @if ($tagihan->sudah_dikirim)
+                            <span class="inline-block bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Sudah Diingatkan</span>
+                        @elseif (\Carbon\Carbon::parse($tagihan->tanggal_transfer)->isToday())
+                            <span class="inline-block bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full">Jatuh Tempo Hari Ini</span>
+                        @else
+                            <span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">Belum Diingatkan</span>
                         @endif
                     </td>
+                    <td class="px-6 py-4">
+                        <form action="{{ route('tagihan.destroy', $tagihan->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus tagihan ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs">Hapus</button>
+                        </form>
+                    </td>
                 </tr>
-            @empty
+                @empty
                 <tr>
-                    <td colspan="5" class="text-center py-4">Belum ada tagihan.</td>
+                    <td colspan="5" class="text-center py-6 text-gray-500">Belum ada tagihan.</td>
                 </tr>
-            @endforelse
-        </tbody>
-    </table>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

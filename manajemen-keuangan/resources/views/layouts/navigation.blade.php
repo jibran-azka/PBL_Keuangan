@@ -20,9 +20,9 @@
                         {{ __('Noted Transaksi') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('akun.index')" :active="request()->routeIs('akun.index')">
+                    {{-- <x-nav-link :href="route('akun.index')" :active="request()->routeIs('akun.index')">
                         {{ __('Account Transactions') }}
-                    </x-nav-link>
+                    </x-nav-link> --}}
 
                     <x-nav-link :href="route('laporan.index')" :active="request()->routeIs('laporan.index')">
                         {{ __('Laporan') }}

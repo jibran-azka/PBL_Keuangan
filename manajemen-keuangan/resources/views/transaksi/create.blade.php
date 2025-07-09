@@ -25,14 +25,14 @@
             <input type="text" name="keterangan" class="w-full mt-1 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
         </div>
 
-        <div>
+        {{-- <div>
             <label class="block text-gray-700">Akun</label>
             <select name="account_id" required class="w-full mt-1 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                 @foreach ($accounts as $account)
                     <option value="{{ $account->id }}">{{ $account->nama_akun }}</option>
                 @endforeach
             </select>
-        </div>
+        </div> --}}
 
         <div>
             <label class="block text-gray-700">Tanggal</label>

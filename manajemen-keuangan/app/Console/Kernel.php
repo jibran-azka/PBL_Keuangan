@@ -4,20 +4,29 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Http\Controllers\TagihanController;
+use App\Console\Commands\KirimPengingatTagihan;
 
 class Kernel extends ConsoleKernel
 {
     /**
-     * Define the application's command schedule.
+     * Register artisan commands (custom).
+     *
+     * Ini tempat daftar command agar dikenali Laravel.
+     */
+    protected $commands = [
+        KirimPengingatTagihan::class,
+    ];
+
+    /**
+     * Jadwal eksekusi otomatis via scheduler.
      */
     protected function schedule(Schedule $schedule)
     {
-         $schedule->call([TagihanController::class, 'prosesTagihanHarian'])->daily();
+        $schedule->command('app:kirim-pengingat-tagihan')->everyMinute();
     }
 
     /**
-     * Register the commands for the application.
+     * Load semua perintah tambahan dari folder Commands & routes/console.php
      */
     protected function commands()
     {
