@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: laravel-app
+    env: php
+    buildCommand: "composer install --no-dev"
+    startCommand: "php artisan serve --host=0.0.0.0 --port=10000"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: ep-calm-tree-a1xli8fb-pooler.ap-southeast-1.aws.neon.tech
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: neondb
+      - key: DB_USERNAME
+        value: neondb_owner
+      - key: DB_PASSWORD
+        value: npg_8AqERVBIOp4j
+      - key: DB_SSLMODE
+        value: require
